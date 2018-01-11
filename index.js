@@ -14,13 +14,12 @@ export default class IWorker {
   _toCode(fn) {
     return `
        self.onmessage = event => {
-         const args = event.data.message
+         const args = event.data.message;
+         if (args === 'kill') return close();
          if (args) {
-            return self.postMessage((${fn}).call(null, args))
-           // return close()
+            return self.postMessage((${fn}).call(null, args));
          }
-         return self.postMessage((${fn})())
-         // return close()
+         return self.postMessage((${fn})());
        }
      `;
   }
@@ -32,10 +31,14 @@ export default class IWorker {
     });
     const objectURL = URL.createObjectURL(blob);
     const worker = new Worker(objectURL);
+    worker.kill = () => {
+      URL.revokeObjectURL(objectURL);
+      worker.post('kill')
+      setTimeout(worker.terminate);
+    };
     worker.post = message =>
       new Promise((resolve, reject) => {
         worker.onmessage = event => {
-          // URL.revokeObjectURL(objectURL);
           resolve(event.data);
         };
         worker.onerror = e => {
@@ -72,20 +75,28 @@ export default class IWorker {
   }
 
   runAll(args) {
-      let workers = [];
-      this.workers.forEach(worker => {
-        workers.push(worker.post.bind(worker, args));
-      });
-      return this._runPromisesInSeries(workers);
+    let workers = [];
+    this.workers.forEach(worker => {
+      workers.push(worker.post.bind(worker, args));
+    });
+    return this._runPromisesInSeries(workers);
   }
 
-  kill(name = 'default', signal) {
+  kill(name = 'default') {
+    if (typeof name !== 'string') {
+      throw new TypeError(`The first parameter is not a string`);
+    }
+    if (!this.workers.has(name)) {
+      throw new TypeError(`You have not registered this worker: '${name}'`);
+    }
     let worker = this.workers.get(name);
-    this.run(name, { type: 'KILL', signal }).then(worker.terminate);
+    worker.kill();
   }
 
-  killAll(){
-
+  killAll() {
+    this.workers.forEach(worker => {
+      worker.kill();
+    });
   }
 
   add(name, fn) {
@@ -93,7 +104,7 @@ export default class IWorker {
       throw new TypeError(`The first parameter is not a string`);
     }
     if (this.workers.has(name)) {
-      throw new TypeError(`You already use the same name '${name}' of worker`);
+      throw new TypeError(`You already registered this worker: '${name}'`);
     }
     if (typeof fn !== 'function') {
       throw new TypeError(`The second parameter is not a function`);
