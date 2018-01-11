@@ -2,7 +2,7 @@
   "name": "island-worker",
   "version": "1.0.0",
   "description": "An utility of web workers",
-  "main": "dist/workerize.js",
+  "main": "dist/IWorker.js",
   "module": "index.js",
   "scripts": {
     "dev": "microbundle watch",

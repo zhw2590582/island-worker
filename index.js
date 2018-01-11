@@ -1,4 +1,4 @@
-class IWorker {
+export default class IWorker {
   constructor(fn) {
     if (typeof fn !== 'function') {
       throw new TypeError(`The first parameter is not a function`);
@@ -14,26 +14,28 @@ class IWorker {
   _toCode(fn) {
     return `
        self.onmessage = event => {
-         const args = event.data.message.args
+         const args = event.data.message
          if (args) {
-           self.postMessage((${fn}).apply(null, args))
-           return close()
+            return self.postMessage((${fn}).call(null, args))
+           // return close()
          }
-         self.postMessage((${fn})())
-         return close()
+         return self.postMessage((${fn})())
+         // return close()
        }
      `;
   }
 
   _create(fn) {
     const URL = window.URL || window.webkitURL;
-    const blob = new Blob([this._toCode(fn)], { type: 'application/javascript' });
+    const blob = new Blob([this._toCode(fn)], {
+      type: 'application/javascript'
+    });
     const objectURL = URL.createObjectURL(blob);
     const worker = new Worker(objectURL);
     worker.post = message =>
       new Promise((resolve, reject) => {
         worker.onmessage = event => {
-          URL.revokeObjectURL(objectURL);
+          // URL.revokeObjectURL(objectURL);
           resolve(event.data);
         };
         worker.onerror = e => {
@@ -51,20 +53,39 @@ class IWorker {
    * ================================== PUBLIC METHODS ==================================
    */
 
-  run(args) {
-    //
+  run(name, args) {
+    if (Array.isArray(name)) {
+      args = name;
+      name = 'default';
+    }
+    if (typeof name !== 'string') {
+      throw new TypeError(`The first parameter is not a string`);
+    }
+    if (!Array.isArray(args)) {
+      throw new TypeError(`The second parameter is not an array`);
+    }
+    if (!this.workers.has(name)) {
+      throw new TypeError(`You have not registered this worker: '${name}'`);
+    }
+    let worker = this.workers.get(name);
+    return worker.post(args);
   }
 
-  runAll() {
-    //
+  runAll(args) {
+      let workers = [];
+      this.workers.forEach(worker => {
+        workers.push(worker.post.bind(worker, args));
+      });
+      return this._runPromisesInSeries(workers);
   }
 
-  kill(name = 'default') {
-    this.workers.delete(name);
+  kill(name = 'default', signal) {
+    let worker = this.workers.get(name);
+    this.run(name, { type: 'KILL', signal }).then(worker.terminate);
   }
 
-  killAll() {
-    //
+  killAll(){
+
   }
 
   add(name, fn) {
@@ -74,16 +95,19 @@ class IWorker {
     if (this.workers.has(name)) {
       throw new TypeError(`You already use the same name '${name}' of worker`);
     }
-    if (typeof name !== 'function') {
+    if (typeof fn !== 'function') {
       throw new TypeError(`The second parameter is not a function`);
     }
-    this.workers.push({ name, worker: this._create(fn) });
+    this.workers.set(name, this._create(fn));
   }
 
   /**
    * ================================== HELPER ==================================
    */
+
+  _runPromisesInSeries(ps) {
+    ps.reduce((p, next) => p.then(next), Promise.resolve());
+  }
 }
 
 window.IWorker = IWorker;
-module.exports = IWorker;
