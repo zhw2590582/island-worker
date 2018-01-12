@@ -21,6 +21,11 @@ var workers = new IWorker(function (args) {
 // By default execute a worker named 'default'
 workers.run(['default']).then(console.log).catch(console.error);
 
+// Or use async/await
+// (async () => {
+//     console.log(await workers.run(['default']));
+// })();
+
 // Add a custom worker
 workers.add('custom', function (args) {
     return args[0];

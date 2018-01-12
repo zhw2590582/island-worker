@@ -19,6 +19,14 @@
         // By default execute a worker named 'default'
         workers.run(['default']).then(console.log).catch(console.error);
 
+        // (async () => {
+        //     try {
+        //         console.log(await workers.run(['default']));
+        //     } catch (error) {
+        //         console.log(error);
+        //     }
+        // })();
+
         // Add a custom worker
         workers.add('custom', function (args) {
             return args[0];
