@@ -1,4 +1,4 @@
-# island-worker
+# island-worker [![Build Status](https://www.travis-ci.org/zhw2590582/island-worker.svg?branch=master)](https://www.travis-ci.org/zhw2590582/island-worker) [![Coverage Status](https://coveralls.io/repos/github/zhw2590582/island-worker/badge.svg?branch=master)](https://coveralls.io/github/zhw2590582/island-worker?branch=master)
 
 > An utility of web workers
 
