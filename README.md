@@ -42,14 +42,20 @@ setTimeout(() => {
 // By default, a worker named 'default' is stopped
 setTimeout(() => {
     workers.kill();
-    workers.run(['kill']).then(console.log).catch(console.error);
+    workers.run(['kill default']).then(console.log).catch(console.error);
 }, 400);
+
+// Stop a custom worker
+setTimeout(() => {
+    workers.kill('custom');
+    workers.run(['kill custom']).then(console.log).catch(console.error);
+}, 600);
 
 // Stop all workers
 setTimeout(() => {
     workers.killAll();
-    workers.runAll(['killAll']).then(console.log).catch(console.error);
-}, 600);
+    workers.runAll(['kill all']).then(console.log).catch(console.error);
+}, 800);
 ```
 
 ## Related
