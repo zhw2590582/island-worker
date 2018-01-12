@@ -33,8 +33,7 @@ export default class IWorker {
     const worker = new Worker(objectURL);
     worker.kill = () => {
       URL.revokeObjectURL(objectURL);
-      worker.post('kill')
-      setTimeout(worker.terminate);
+      worker.terminate();
     };
     worker.post = message =>
       new Promise((resolve, reject) => {
@@ -76,10 +75,10 @@ export default class IWorker {
 
   runAll(args) {
     let workers = [];
-    this.workers.forEach(worker => {
-      workers.push(worker.post.bind(worker, args));
+    this.workers.forEach((worker, name) => {
+      workers.push(this.run(name, args));
     });
-    return this._runPromisesInSeries(workers);
+    return Promise.all(workers);
   }
 
   kill(name = 'default') {
