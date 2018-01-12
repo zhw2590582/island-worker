@@ -19,11 +19,11 @@ var workers = new IWorker(args => {
 });
 
 // By default execute a worker named 'default'
-workers.run(['default']).then(console.log).catch(console.error);
+workers.run(['run default']).then(console.log).catch(console.error);
 
 // Or use async/await
 // (async () => {
-//     console.log(await workers.run(['default']));
+//     console.log(await workers.run(['run default']));
 // })();
 
 // Add a custom worker
@@ -32,11 +32,11 @@ workers.add('custom', args => {
 });
 
 // Execute a custom worker
-workers.run('custom', ['custom']).then(console.log).catch(console.error);
+workers.run('custom', ['run custom']).then(console.log).catch(console.error);
 
 // Execute all workers
 setTimeout(() => {
-    workers.runAll(['runAll']).then(console.log).catch(console.error);
+    workers.runAll(['run all']).then(console.log).catch(console.error);
 }, 200);
 
 // By default, a worker named 'default' is stopped
