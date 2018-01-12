@@ -14,7 +14,7 @@ $ npm install island-worker
 import IWorker from 'island-worker';
 
 // By default, a worker named 'default' is created
-var workers = new IWorker(function (args) {
+var workers = new IWorker(args => {
     return args[0];
 });
 
@@ -27,7 +27,7 @@ workers.run(['default']).then(console.log).catch(console.error);
 // })();
 
 // Add a custom worker
-workers.add('custom', function (args) {
+workers.add('custom', args => {
     return args[0];
 });
 
