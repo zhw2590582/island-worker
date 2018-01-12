@@ -12,23 +12,20 @@
     <script src="./dist/IWorker.umd.js"></script>
     <script>
         // By default, a worker named 'default' is created
-        var workers = new IWorker(function (args) {
+        var workers = new IWorker(args => {
             return args[0];
         });
 
         // By default execute a worker named 'default'
         workers.run(['default']).then(console.log).catch(console.error);
 
+        // Or use async/await
         // (async () => {
-        //     try {
-        //         console.log(await workers.run(['default']));
-        //     } catch (error) {
-        //         console.log(error);
-        //     }
+        //     console.log(await workers.run(['default']));
         // })();
 
         // Add a custom worker
-        workers.add('custom', function (args) {
+        workers.add('custom', args => {
             return args[0];
         });
 
@@ -43,14 +40,20 @@
         // By default, a worker named 'default' is stopped
         setTimeout(() => {
             workers.kill();
-            workers.run(['kill']).then(console.log).catch(console.error);
+            workers.run(['kill default']).then(console.log).catch(console.error);
         }, 400);
+
+        // Stop a custom worker
+        setTimeout(() => {
+            workers.kill('custom');
+            workers.run(['kill custom']).then(console.log).catch(console.error);
+        }, 600);
 
         // Stop all workers
         setTimeout(() => {
             workers.killAll();
-            workers.runAll(['killAll']).then(console.log).catch(console.error);
-        }, 600);
+            workers.runAll(['kill all']).then(console.log).catch(console.error);
+        }, 800);
     </script>
 </body>
 
